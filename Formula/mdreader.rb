@@ -5,6 +5,7 @@ class Mdreader < Formula
   sha256 "0833b7807c367934668da2171ddf28b06bd2c81da9e0408796d301e0ee226ad7"
   license "MIT"
 
+  depends_on "node" => :build
   depends_on :macos => :sonoma
 
   def install
