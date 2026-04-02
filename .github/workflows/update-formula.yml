@@ -87,6 +87,7 @@ jobs:
             sha256 "$SHA256"
             license "MIT"
 
+            depends_on "node" => :build
             depends_on :macos => :sonoma
 
             def install
