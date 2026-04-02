@@ -12,7 +12,7 @@ class AgentVision < Formula
   def install
     app_bundle = prefix/"Agent Vision.app"
     (app_bundle).mkpath
-    cp_r Dir["Agent Vision.app/*"], app_bundle
+    cp_r Dir["*"], app_bundle
 
     system "xattr", "-cr", app_bundle.to_s
 
