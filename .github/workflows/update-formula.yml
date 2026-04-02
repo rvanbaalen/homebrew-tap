@@ -1,0 +1,143 @@
+name: Update Formula
+
+on:
+  repository_dispatch:
+    types: [update-agent-vision, update-mdreader]
+
+permissions:
+  contents: write
+
+jobs:
+  update-agent-vision:
+    if: github.event.action == 'update-agent-vision'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write formula
+        env:
+          VERSION: ${{ github.event.client_payload.version }}
+          TAG: ${{ github.event.client_payload.tag }}
+          SHA256: ${{ github.event.client_payload.sha256 }}
+        run: |
+          envsubst '$TAG $VERSION $SHA256' > Formula/agent-vision.rb <<'FORMULA'
+          class AgentVision < Formula
+            desc "Give AI agents eyes on your screen"
+            homepage "https://github.com/rvanbaalen/agent-vision"
+            url "https://github.com/rvanbaalen/agent-vision/releases/download/$TAG/agent-vision-arm64.tar.gz"
+            version "$VERSION"
+            sha256 "$SHA256"
+            license "MIT"
+
+            depends_on :macos => :sonoma
+            depends_on arch: :arm64
+
+            def install
+              app_bundle = prefix/"Agent Vision.app"
+              (app_bundle).mkpath
+              cp_r Dir["Agent Vision.app/*"], app_bundle
+
+              system "xattr", "-cr", app_bundle.to_s
+
+              bin.install_symlink app_bundle/"Contents/MacOS/agent-vision"
+            end
+
+            def caveats
+              <<~EOS
+                Agent Vision requires macOS permissions:
+                  - Screen Recording (System Settings > Privacy & Security > Screen Recording)
+                  - Accessibility (System Settings > Privacy & Security > Accessibility)
+              EOS
+            end
+
+            test do
+              assert_match "agent-vision", shell_output("#{bin}/agent-vision --help")
+            end
+          end
+          FORMULA
+
+      - name: Commit and push
+        env:
+          VERSION: ${{ github.event.client_payload.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/agent-vision.rb
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git commit -m "agent-vision ${VERSION}"
+          git push
+
+  update-mdreader:
+    if: github.event.action == 'update-mdreader'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write formula
+        env:
+          VERSION: ${{ github.event.client_payload.version }}
+          TAG: ${{ github.event.client_payload.tag }}
+          SHA256: ${{ github.event.client_payload.sha256 }}
+        run: |
+          envsubst '$TAG $VERSION $SHA256' > Formula/mdreader.rb <<'FORMULA'
+          class Mdreader < Formula
+            desc "A beautiful macOS markdown reader"
+            homepage "https://github.com/rvanbaalen/mdreader"
+            url "https://github.com/rvanbaalen/mdreader/archive/refs/tags/$TAG.tar.gz"
+            sha256 "$SHA256"
+            license "MIT"
+
+            depends_on :macos => :sonoma
+
+            def install
+              system "bash", "build.sh"
+              prefix.install "mdreader.app"
+              bin.install_symlink prefix/"mdreader.app/Contents/MacOS/mdreader"
+
+              system "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister", "#{prefix}/mdreader.app"
+            end
+
+            def post_install
+              app_source = "#{prefix}/mdreader.app"
+              app_target = "/Applications/mdreader.app"
+
+              if File.writable?("/Applications")
+                FileUtils.rm_rf(app_target)
+                FileUtils.ln_sf(app_source, app_target)
+                ohai "mdreader.app installed to /Applications"
+              else
+                ohai "To install mdreader.app to Applications, run:"
+                puts "  sudo ln -sf #{app_source} #{app_target}"
+              end
+            end
+
+            def caveats
+              unless File.symlink?("/Applications/mdreader.app")
+                <<~EOS
+                  To add mdreader to your Applications folder:
+                    sudo ln -sf #{prefix}/mdreader.app /Applications/mdreader.app
+
+                  Usage:
+                    mdreader README.md
+                    open -a mdreader README.md
+                EOS
+              end
+            end
+
+            test do
+              assert_predicate prefix/"mdreader.app", :exist?
+              assert_predicate prefix/"mdreader.app/Contents/MacOS/mdreader", :executable?
+            end
+          end
+          FORMULA
+
+      - name: Commit and push
+        env:
+          VERSION: ${{ github.event.client_payload.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/mdreader.rb
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git commit -m "mdreader ${VERSION}"
+          git push
