@@ -1,8 +1,8 @@
 class Mdreader < Formula
   desc "A beautiful macOS markdown reader"
   homepage "https://github.com/rvanbaalen/mdreader"
-  url "https://github.com/rvanbaalen/mdreader/archive/refs/tags/v1.2.2.tar.gz"
-  sha256 "71856c1c95ad6162b3d275831b56a092b2dfc444f6a2d9d370f2b3515e53128d"
+  url "https://github.com/rvanbaalen/mdreader/archive/refs/tags/v1.3.0.tar.gz"
+  sha256 "0833b7807c367934668da2171ddf28b06bd2c81da9e0408796d301e0ee226ad7"
   license "MIT"
 
   depends_on :macos => :sonoma
@@ -12,7 +12,6 @@ class Mdreader < Formula
     prefix.install "mdreader.app"
     bin.install_symlink prefix/"mdreader.app/Contents/MacOS/mdreader"
 
-    # Register with LaunchServices
     system "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister", "#{prefix}/mdreader.app"
   end
 
@@ -20,13 +19,11 @@ class Mdreader < Formula
     app_source = "#{prefix}/mdreader.app"
     app_target = "/Applications/mdreader.app"
 
-    # Try to install to /Applications
     if File.writable?("/Applications")
       FileUtils.rm_rf(app_target)
       FileUtils.ln_sf(app_source, app_target)
       ohai "mdreader.app installed to /Applications"
     else
-      # Can't write to /Applications without sudo — show instructions
       ohai "To install mdreader.app to Applications, run:"
       puts "  sudo ln -sf #{app_source} #{app_target}"
     end
