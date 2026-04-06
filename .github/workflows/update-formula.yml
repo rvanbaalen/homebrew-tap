@@ -120,7 +120,7 @@ jobs:
               unless File.symlink?("/Applications/mdreader.app")
                 <<~EOS
                   To add mdreader to your Applications folder:
-                    sudo ln -sf #{prefix}/mdreader.app /Applications/mdreader.app
+                    sudo rm -rf /Applications/mdreader.app && ln -sfn #{prefix}/mdreader.app /Applications/mdreader.app
 
                   Usage:
                     mdreader README.md
