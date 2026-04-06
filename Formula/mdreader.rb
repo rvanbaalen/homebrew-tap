@@ -1,8 +1,8 @@
 class Mdreader < Formula
   desc "A beautiful macOS markdown reader"
   homepage "https://github.com/rvanbaalen/mdreader"
-  url "https://github.com/rvanbaalen/mdreader/archive/refs/tags/v1.7.3.tar.gz"
-  sha256 "e2fffc0c4c6c2183698d17d9461af0a63c96cb10592f255b9612b5cdac758092"
+  url "https://github.com/rvanbaalen/mdreader/archive/refs/tags/v1.8.0.tar.gz"
+  sha256 "74b7bbd1b82a32b594f4f8747f8b176560360f9e2aa84a1378c5e35b1bab82f9"
   license "MIT"
 
   depends_on "node" => :build
@@ -11,6 +11,7 @@ class Mdreader < Formula
   def install
     system "bash", "build.sh"
     prefix.install "mdreader.app"
+    system "xattr", "-cr", "#{prefix}/mdreader.app"
     bin.install_symlink prefix/"mdreader.app/Contents/MacOS/mdreader"
 
     system "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister", "#{prefix}/mdreader.app"
@@ -37,7 +38,7 @@ class Mdreader < Formula
     unless File.symlink?("/Applications/mdreader.app")
       <<~EOS
         To add mdreader to your Applications folder:
-          sudo ln -sf #{prefix}/mdreader.app /Applications/mdreader.app
+          sudo rm -rf /Applications/mdreader.app && ln -sfn #{prefix}/mdreader.app /Applications/mdreader.app
 
         Usage:
           mdreader README.md
