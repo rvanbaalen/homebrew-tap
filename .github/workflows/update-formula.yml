@@ -93,6 +93,7 @@ jobs:
             def install
               system "bash", "build.sh"
               prefix.install "mdreader.app"
+              system "xattr", "-cr", "#{prefix}/mdreader.app"
               bin.install_symlink prefix/"mdreader.app/Contents/MacOS/mdreader"
 
               system "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister", "#{prefix}/mdreader.app"
