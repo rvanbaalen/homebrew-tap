@@ -12,7 +12,7 @@ jobs:
     if: github.event.action == 'update-agent-vision'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Write formula
         env:
@@ -71,7 +71,7 @@ jobs:
     if: github.event.action == 'update-mdreader'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Write formula
         env:
